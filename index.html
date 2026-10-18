@@ -51,7 +51,7 @@
   }
   .brand small { display:block; font-size:.62rem; letter-spacing:3px; color:#cbb36a; opacity:.8; }
 
-  .header-right { display:flex; align-items:center; gap:14px; }
+  .header-right { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 
   .wallet {
     display: flex;
@@ -72,16 +72,56 @@
   #balance.flash { animation: flash .6s ease; }
   @keyframes flash { 0%,100%{color:#fff;} 50%{color:var(--gold); transform:scale(1.12);} }
 
-  #langToggle {
+  .top-btn {
     font-family: inherit; cursor: pointer;
     background: rgba(0,0,0,0.3); color: var(--gold);
     border: 1px solid var(--gold-dim); border-radius: 999px;
-    padding: 9px 18px; font-weight: 700; font-size: .92rem;
-    letter-spacing: .5px;
+    padding: 9px 14px; font-weight: 700; font-size: .88rem;
     transition: background .2s, transform .1s, opacity .22s;
   }
-  #langToggle:hover { background: rgba(232,199,102,0.18); }
-  #langToggle:active { transform: scale(.95); }
+  .top-btn:hover { background: rgba(232,199,102,0.18); }
+  .top-btn:active { transform: scale(.95); }
+
+  .lang-switch {
+    display: inline-flex; background: rgba(0,0,0,0.3);
+    border: 1px solid var(--gold-dim); border-radius: 999px; overflow: hidden;
+  }
+  .lang-switch button {
+    font-family: inherit; border: none; background: transparent; color: #cbb36a;
+    padding: 8px 13px; cursor: pointer; font-weight: 700; font-size: .85rem;
+    transition: background .2s, color .2s;
+  }
+  .lang-switch button.active { background: var(--gold); color: #1c1c1c; }
+  .lang-switch button:not(.active):hover { background: rgba(232,199,102,0.15); color: var(--gold); }
+
+  /* ---------- Card-Counting HUD ---------- */
+  .hud {
+    position: fixed; top: 96px; left: 16px; z-index: 30;
+    background: rgba(6,24,16,0.82);
+    border: 1px solid rgba(232,199,102,0.5);
+    border-radius: 14px; padding: 12px 16px; min-width: 164px;
+    box-shadow: 0 0 20px rgba(232,199,102,0.22), inset 0 0 20px rgba(0,0,0,0.45);
+    backdrop-filter: blur(6px);
+    font-size: .82rem;
+    animation: hudGlow 3.2s ease-in-out infinite;
+  }
+  @keyframes hudGlow {
+    0%,100% { box-shadow: 0 0 16px rgba(232,199,102,0.18), inset 0 0 18px rgba(0,0,0,0.45); }
+    50%     { box-shadow: 0 0 28px rgba(232,199,102,0.40), inset 0 0 18px rgba(0,0,0,0.45); }
+  }
+  .hud h4 { font-size:.6rem; letter-spacing:3px; color:var(--gold); text-align:center; margin-bottom:10px; text-transform:uppercase; }
+  .hud .row { display:flex; justify-content:space-between; gap:14px; margin:5px 0; align-items:center; }
+  .hud .row > span:first-child { color:#9db5a6; font-size:.74rem; }
+  .hud .val { font-weight:800; font-variant-numeric: tabular-nums; font-size:1rem; }
+  .hud .val.pos { color:#7CFC98; text-shadow:0 0 10px rgba(124,252,152,.7); }
+  .hud .val.neg { color:#ff8a7a; text-shadow:0 0 10px rgba(255,138,122,.7); }
+  .hud .val.zero { color:#ffe27a; text-shadow:0 0 8px rgba(255,226,122,.5); }
+  .hud .edge { margin-top:10px; text-align:center; font-size:.72rem; font-weight:700; padding:5px; border-radius:7px; background:rgba(0,0,0,.3); }
+  .hud .edge.hi { color:#7CFC98; } .hud .edge.lo { color:#ff8a7a; } .hud .edge.mid { color:#cbb36a; }
+  @media (max-width: 880px) { .hud { transform: scale(.82); transform-origin: top left; } }
+
+  /* ---------- Canvas FX ---------- */
+  #fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 45; }
 
   .table {
     position: relative;
@@ -226,23 +266,53 @@
     position: fixed; top: 76px; left:50%; transform: translateX(-50%) translateY(-20px);
     background: rgba(10,30,20,0.95); border:1px solid var(--gold);
     color:#fff; padding: 12px 22px; border-radius: 10px; font-size:.95rem;
-    opacity:0; pointer-events:none; transition: all .3s; z-index: 50; max-width: 90vw; text-align:center;
+    opacity:0; pointer-events:none; transition: all .3s; z-index: 60; max-width: 90vw; text-align:center;
     box-shadow: 0 8px 24px rgba(0,0,0,.5);
   }
   .toast.show { opacity:1; transform: translateX(-50%) translateY(0); }
   .toast b { color: var(--gold); }
 
+  /* ---------- Instructions modal ---------- */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(4px);
+    z-index: 100; display: flex; align-items: center; justify-content: center; padding: 20px;
+    opacity: 0; transition: opacity .25s;
+  }
+  .modal-overlay.show { opacity: 1; }
+  .modal-overlay.hidden { display: none; }
+  .modal-card {
+    background: linear-gradient(160deg,#0c3b24,#06301c);
+    border: 1px solid var(--gold-dim); border-radius: 16px;
+    max-width: 640px; width: 100%; max-height: 85vh; overflow-y: auto;
+    padding: 28px 30px; position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,.6), 0 0 32px rgba(232,199,102,.16);
+    transform: translateY(12px) scale(.98); transition: transform .25s;
+  }
+  .modal-overlay.show .modal-card { transform: none; }
+  .modal-card h2 { color: var(--gold); font-family: Georgia, serif; margin-bottom: 10px; font-size: 1.5rem; }
+  .modal-card h3 { color: var(--gold); margin: 16px 0 6px; font-size: 1.05rem; }
+  .modal-card p { line-height: 1.6; margin-bottom: 8px; color: #e6efe9; font-size: .92rem; }
+  .modal-card ul { margin: 4px 0 8px; padding-inline-start: 22px; }
+  .modal-card li { line-height: 1.55; margin-bottom: 5px; color: #e6efe9; font-size: .92rem; }
+  .modal-card b { color: var(--gold); }
+  .modal-close {
+    position: absolute; top: 10px; inset-inline-end: 14px;
+    background: none; border: none; color: #cbb36a; font-size: 1.9rem; cursor: pointer; line-height: 1;
+  }
+  .modal-close:hover { color: var(--gold); }
+
   .hidden { display:none !important; }
 
   /* Smooth language-switch fade */
-  header, .message, .controls, .footer-links, .area .tag {
+  header, .message, .controls, .footer-links, .area .tag, .hud {
     transition: opacity .22s ease;
   }
   body.lang-fade header,
   body.lang-fade .message,
   body.lang-fade .controls,
   body.lang-fade .footer-links,
-  body.lang-fade .area .tag { opacity: 0; }
+  body.lang-fade .area .tag,
+  body.lang-fade .hud { opacity: 0; }
 
   @media (max-width: 560px) {
     .card { width: 72px; height: 100px; }
@@ -253,6 +323,8 @@
 </style>
 </head>
 <body>
+  <canvas id="fx"></canvas>
+
   <header>
     <div class="brand">♠ Casino Royale ♥<small data-i18n="brandSub">BLACKJACK · PAYS 3 TO 2</small></div>
     <div class="header-right">
@@ -260,9 +332,22 @@
         <div class="pill"><span class="label" data-i18n="balanceLabel">Balance</span><span class="value">$<span id="balance">1000</span></span></div>
         <div class="pill"><span class="label" data-i18n="betLabel">Bet</span><span class="value">$<span id="betAmount">0</span></span></div>
       </div>
-      <button id="langToggle" aria-label="Switch language">עברית</button>
+      <button class="top-btn" id="howTo" data-i18n="howToPlay">📖 How to Play</button>
+      <div class="lang-switch" id="langSwitch">
+        <button data-lang="en">EN</button>
+        <button data-lang="he">עב</button>
+        <button data-lang="ar">ع</button>
+      </div>
     </div>
   </header>
+
+  <div class="hud" id="hud">
+    <h4 data-i18n="hudTitle">Card Counting</h4>
+    <div class="row"><span data-i18n="hudRunning">Running Count</span><span class="val" id="rcVal">0</span></div>
+    <div class="row"><span data-i18n="hudTrue">True Count</span><span class="val" id="tcVal">0.0</span></div>
+    <div class="row"><span data-i18n="hudDecks">Decks Left</span><span class="val zero" id="decksVal">6.0</span></div>
+    <div class="edge mid" id="edgeVal">Even odds</div>
+  </div>
 
   <div class="table">
     <div class="felt-ring"></div>
@@ -329,6 +414,14 @@
 
   <div class="toast" id="toast"></div>
 
+  <!-- Instructions modal -->
+  <div class="modal-overlay hidden" id="modal">
+    <div class="modal-card">
+      <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
 <script>
 (() => {
   "use strict";
@@ -337,24 +430,19 @@
   const T = {
     en: {
       brandSub: 'BLACKJACK · PAYS 3 TO 2',
-      balanceLabel: 'Balance',
-      betLabel: 'Bet',
-      dealer: 'Dealer',
-      player: 'Player',
+      balanceLabel: 'Balance', betLabel: 'Bet',
+      dealer: 'Dealer', player: 'Player',
       currentWager: 'Current wager:',
-      clear: 'Clear',
-      max: 'Max',
-      deal: 'Deal',
-      hit: 'Hit',
-      stand: 'Stand',
-      double: 'Double',
-      split: 'Split',
-      hint: '💡 Hint',
-      newHand: 'New Hand',
+      clear: 'Clear', max: 'Max', deal: 'Deal',
+      hit: 'Hit', stand: 'Stand', double: 'Double', split: 'Split',
+      hint: '💡 Hint', newHand: 'New Hand',
       resetBank: 'Reset bankroll',
       rules: 'Dealer stands on 17 · 6-deck shoe',
-      soundOn: '🔊 Sound: On',
-      soundOff: '🔇 Sound: Off',
+      soundOn: '🔊 Sound: On', soundOff: '🔇 Sound: Off',
+      howToPlay: '📖 How to Play',
+      // HUD
+      hudTitle: 'Card Counting', hudRunning: 'Running Count', hudTrue: 'True Count', hudDecks: 'Decks Left',
+      edgeHigh: 'Player advantage ▲', edgeNeutral: 'Even odds', edgeLow: 'House favored ▼',
       // messages
       placeBet: 'Place your bet to begin.',
       dealing: 'Dealing…',
@@ -372,13 +460,8 @@
       dealerWins: 'Dealer wins this round.',
       pushReturned: 'Push — bet returned.',
       results: (w, l, p) => `Results: ${w} win · ${l} loss · ${p} push.`,
-      // hand labels
       softPrefix: 'soft ',
-      won: 'Win',
-      lost: 'Lost',
-      pushTag: 'Push',
-      bjWin: 'Blackjack!',
-      // toasts
+      won: 'Win', lost: 'Lost', pushTag: 'Push', bjWin: 'Blackjack!',
       outOfChips: "You're out of chips — the house grants you a fresh <b>$1000</b> stake. Good luck!",
       bankReset: 'Bankroll reset to <b>$1000</b>.',
       hintMsg: (rec, up) => {
@@ -390,29 +473,47 @@
           SPLIT:'splitting turns a weak pair into two stronger starting hands'
         };
         return `Basic strategy says: <b>${names[rec]}</b><br><span style="font-size:.82rem;opacity:.85">vs dealer ${up} — ${why[rec]}.</span>`;
-      }
+      },
+      // modal
+      modalTitle: 'How to Play & Strategy',
+      m_goalH: 'The Goal',
+      m_goalP: 'Beat the dealer: get closer to 21 than they do, without going over. Number cards count at face value, J/Q/K count as 10, and an Ace counts as 1 or 11 — whichever helps you more.',
+      m_actionsH: 'Your Moves',
+      m_actionsList: [
+        '<b>Hit</b> — take another card.',
+        '<b>Stand</b> — keep your current total.',
+        '<b>Double Down</b> — double your bet and take exactly one more card.',
+        '<b>Split</b> — if your two cards match, split them into two separate hands.',
+        'A two-card 21 is a <b>Blackjack</b> and pays 3:2. The dealer stands on 17.'
+      ],
+      m_countH: 'Hi-Lo Card Counting',
+      m_countP: 'Each card you see is worth a value: cards <b>2–6 = +1</b>, <b>7–9 = 0</b>, and <b>10 / J / Q / K / A = −1</b>. Add these up as cards appear to get the <b>Running Count</b>. Divide it by the number of decks still in the shoe to get the <b>True Count</b>.',
+      m_countP2: 'A high positive true count means many tens and aces remain — that favors you (more blackjacks, and the dealer busts more often). Skilled players raise their bets as the true count climbs.',
+      m_stratH: 'The Logic Behind the Hints',
+      m_stratP: 'The Basic Strategy hint always picks the move with the highest expected value for your exact total versus the dealer’s upcard — distilled from millions of simulated hands.',
+      m_stratList: [
+        'Stand on hard 12–16 when the dealer shows 2–6: they are likely to bust.',
+        'Hit those same totals against 7–Ace: the dealer is strong, so you must improve.',
+        'Double on 11 (and often 10): a single card gives a strong shot at 20–21.',
+        'Always split Aces and 8s; never split 10s or 5s.'
+      ],
+      m_disclaimer: 'This game is for entertainment and education only.'
     },
+
     he: {
       brandSub: "בלאק-ג'ק · משלם 3 ל-2",
-      balanceLabel: 'יתרה',
-      betLabel: 'הימור',
-      dealer: 'דילר',
-      player: 'שחקן',
+      balanceLabel: 'יתרה', betLabel: 'הימור',
+      dealer: 'דילר', player: 'שחקן',
       currentWager: 'סכום ההימור:',
-      clear: 'נקה',
-      max: 'מקסימום',
-      deal: 'חלק',
-      hit: 'קח קלף',
-      stand: 'עצור',
-      double: 'הכפל',
-      split: 'פצל',
-      hint: '💡 רמז',
-      newHand: 'יד חדשה',
+      clear: 'נקה', max: 'מקסימום', deal: 'חלק',
+      hit: 'קח קלף', stand: 'עצור', double: 'הכפל', split: 'פצל',
+      hint: '💡 רמז', newHand: 'יד חדשה',
       resetBank: 'אפס קופה',
       rules: 'הדילר עוצר על 17 · 6 חפיסות',
-      soundOn: '🔊 צליל: פועל',
-      soundOff: '🔇 צליל: כבוי',
-      // messages
+      soundOn: '🔊 צליל: פועל', soundOff: '🔇 צליל: כבוי',
+      howToPlay: '📖 איך משחקים',
+      hudTitle: 'ספירת קלפים', hudRunning: 'ספירה רצה', hudTrue: 'ספירה אמיתית', hudDecks: 'חפיסות שנותרו',
+      edgeHigh: 'יתרון לשחקן ▲', edgeNeutral: 'סיכויים שקולים', edgeLow: 'יתרון לבית ▼',
       placeBet: 'הניחו הימור כדי להתחיל.',
       dealing: 'מחלק…',
       yourMove: 'תורך. קח קלף, עצור, הכפל או פצל?',
@@ -429,13 +530,8 @@
       dealerWins: 'הדילר מנצח בסיבוב זה.',
       pushReturned: 'תיקו — ההימור הוחזר.',
       results: (w, l, p) => `תוצאות: ${w} זכיות · ${l} הפסדים · ${p} תיקו.`,
-      // hand labels
       softPrefix: 'רך ',
-      won: 'זכייה',
-      lost: 'הפסד',
-      pushTag: 'תיקו',
-      bjWin: "בלאק-ג'ק!",
-      // toasts
+      won: 'זכייה', lost: 'הפסד', pushTag: 'תיקו', bjWin: "בלאק-ג'ק!",
       outOfChips: "נגמרו הז'יטונים — הקזינו מעניק לך מחדש <b>$1000</b>. בהצלחה!",
       bankReset: 'הקופה אופסה ל-<b>$1000</b>.',
       hintMsg: (rec, up) => {
@@ -447,11 +543,105 @@
           SPLIT:'פיצול הופך זוג חלש לשתי ידיים פותחות חזקות יותר'
         };
         return `האסטרטגיה הבסיסית ממליצה: <b>${names[rec]}</b><br><span style="font-size:.82rem;opacity:.85">מול הדילר ${up} — ${why[rec]}.</span>`;
-      }
+      },
+      modalTitle: 'איך משחקים ואסטרטגיה',
+      m_goalH: 'המטרה',
+      m_goalP: 'נצחו את הדילר: התקרבו ל-21 יותר ממנו, בלי לעבור. קלפי מספר נספרים לפי ערכם, נסיך/מלכה/מלך שווים 10, ואס שווה 1 או 11 — לפי מה שמשתלם יותר.',
+      m_actionsH: 'המהלכים שלך',
+      m_actionsList: [
+        '<b>קח קלף</b> — קבל קלף נוסף.',
+        '<b>עצור</b> — השאר את הסכום הנוכחי.',
+        '<b>הכפל</b> — הכפל את ההימור וקבל קלף אחד בלבד.',
+        '<b>פצל</b> — אם שני הקלפים זהים, פצל אותם לשתי ידיים נפרדות.',
+        '21 בשני קלפים הוא <b>בלאק-ג\'ק</b> ומשלם 3:2. הדילר עוצר על 17.'
+      ],
+      m_countH: "ספירת קלפים בשיטת היי-לו",
+      m_countP: 'לכל קלף נקבע ערך: <b>2–6 = +1</b>, <b>7–9 = 0</b>, ו-<b>10 / נ / מ / מ / אס = −1</b>. סכמו אותם ככל שהקלפים נחשפים כדי לקבל את <b>הספירה הרצה</b>. חלקו במספר החפיסות שנותרו בנעל כדי לקבל את <b>הספירה האמיתית</b>.',
+      m_countP2: 'ספירה אמיתית חיובית וגבוהה מעידה שנותרו הרבה עשיריות ואסים — וזה לטובתכם (יותר בלאק-ג\'קים, והדילר נשרף יותר). שחקנים מיומנים מגדילים את ההימור כשהספירה עולה.',
+      m_stratH: 'ההיגיון שמאחורי הרמזים',
+      m_stratP: 'רמז האסטרטגיה הבסיסית תמיד בוחר במהלך בעל התוחלת הגבוהה ביותר עבור הסכום המדויק שלכם מול הקלף הגלוי של הדילר — מזוקק ממיליוני ידיים מדומות.',
+      m_stratList: [
+        'עצרו על 12–16 קשיח כשהדילר מראה 2–6: סביר שהוא יישרף.',
+        'קחו קלף באותם סכומים מול 7–אס: הדילר חזק, אז חובה להשתפר.',
+        'הכפילו על 11 (ולרוב 10): קלף אחד נותן סיכוי טוב ל-20–21.',
+        'תמיד פצלו אסים ו-8; לעולם אל תפצלו 10 או 5.'
+      ],
+      m_disclaimer: 'המשחק נועד לבידור וללימוד בלבד.'
+    },
+
+    ar: {
+      brandSub: 'بلاك جاك · يدفع 3 إلى 2',
+      balanceLabel: 'الرصيد', betLabel: 'الرهان',
+      dealer: 'الموزّع', player: 'اللاعب',
+      currentWager: 'الرهان الحالي:',
+      clear: 'مسح', max: 'الأقصى', deal: 'وزّع',
+      hit: 'اسحب', stand: 'قف', double: 'ضاعف', split: 'قسّم',
+      hint: '💡 تلميح', newHand: 'جولة جديدة',
+      resetBank: 'إعادة الرصيد',
+      rules: 'الموزّع يقف على 17 · 6 مجموعات',
+      soundOn: '🔊 الصوت: مفعّل', soundOff: '🔇 الصوت: متوقف',
+      howToPlay: '📖 كيف تلعب',
+      hudTitle: 'عدّ البطاقات', hudRunning: 'العدّ الجاري', hudTrue: 'العدّ الحقيقي', hudDecks: 'المجموعات المتبقية',
+      edgeHigh: 'أفضلية للاعب ▲', edgeNeutral: 'فرص متكافئة', edgeLow: 'أفضلية للكازينو ▼',
+      placeBet: 'ضع رهانك للبدء.',
+      dealing: 'جارٍ التوزيع…',
+      yourMove: 'دورك. اسحب، قف، ضاعف أو قسّم؟',
+      bustOn: (t) => `تجاوزت بـ ${t}!`,
+      youHave: (t) => `لديك ${t}.`,
+      doubledBust: (t) => `ضاعفت وتجاوزت بـ ${t}!`,
+      doubledStand: (t) => `ضاعفت — تقف على ${t}.`,
+      splitAces: 'تقسيم الآسات — بطاقة واحدة لكل يد.',
+      playingHand: (i) => `تلعب اليد ${i}.`,
+      playingHandOf: (i, n) => `تلعب اليد ${i} من ${n}.`,
+      dealerTurn: 'دور الموزّع…',
+      blackjackWin: 'بلاك جاك! فوز كبير! 🎉',
+      youWin: 'لقد فزت! 🎉',
+      dealerWins: 'الموزّع يفوز بهذه الجولة.',
+      pushReturned: 'تعادل — تم إرجاع الرهان.',
+      results: (w, l, p) => `النتائج: ${w} فوز · ${l} خسارة · ${p} تعادل.`,
+      softPrefix: 'ناعم ',
+      won: 'فوز', lost: 'خسارة', pushTag: 'تعادل', bjWin: 'بلاك جاك!',
+      outOfChips: "نفدت رقائقك — يمنحك الكازينو رصيداً جديداً قدره <b>$1000</b>. حظاً موفقاً!",
+      bankReset: 'تمت إعادة الرصيد إلى <b>$1000</b>.',
+      hintMsg: (rec, up) => {
+        const names = { HIT:'اسحب', STAND:'قف', DOUBLE:'ضاعف', SPLIT:'قسّم' };
+        const why = {
+          HIT:'مجموعك منخفض بما يكفي لتحسين فرصك بسحب بطاقة',
+          STAND:'من المرجّح أن يحترق الموزّع أو أن لديك مجموعاً قوياً بالفعل',
+          DOUBLE:'لديك أفضلية هنا — ضاعف الرهان على بطاقة إضافية واحدة',
+          SPLIT:'التقسيم يحوّل زوجاً ضعيفاً إلى يدين أقوى'
+        };
+        return `الاستراتيجية الأساسية تنصح: <b>${names[rec]}</b><br><span style="font-size:.82rem;opacity:.85">مقابل الموزّع ${up} — ${why[rec]}.</span>`;
+      },
+      modalTitle: 'كيف تلعب والاستراتيجية',
+      m_goalH: 'الهدف',
+      m_goalP: 'اهزم الموزّع: اقترب من 21 أكثر منه دون أن تتجاوزها. البطاقات الرقمية بقيمتها، وJ/Q/K بـ10، والآس بـ1 أو 11 حسب الأنسب لك.',
+      m_actionsH: 'حركاتك',
+      m_actionsList: [
+        '<b>اسحب</b> — خذ بطاقة أخرى.',
+        '<b>قف</b> — احتفظ بمجموعك الحالي.',
+        '<b>ضاعف</b> — ضاعف رهانك واسحب بطاقة واحدة فقط.',
+        '<b>قسّم</b> — إذا تطابقت بطاقتاك، قسّمهما إلى يدين منفصلتين.',
+        '21 ببطاقتين هو <b>بلاك جاك</b> ويدفع 3:2. الموزّع يقف على 17.'
+      ],
+      m_countH: 'عدّ البطاقات بنظام Hi-Lo',
+      m_countP: 'لكل بطاقة قيمة: <b>2–6 = +1</b>، <b>7–9 = 0</b>، و<b>10 / J / Q / K / A = −1</b>. اجمعها مع ظهور البطاقات للحصول على <b>العدّ الجاري</b>. اقسمه على عدد المجموعات المتبقية للحصول على <b>العدّ الحقيقي</b>.',
+      m_countP2: 'العدّ الحقيقي الموجب المرتفع يعني بقاء الكثير من العشرات والآسات — وهذا لصالحك (بلاك جاك أكثر واحتراق الموزّع أكثر). يرفع اللاعبون المهرة رهاناتهم كلما ارتفع العدّ.',
+      m_stratH: 'المنطق وراء التلميحات',
+      m_stratP: 'تلميح الاستراتيجية الأساسية يختار دائماً الحركة ذات القيمة المتوقعة الأعلى لمجموعك تحديداً مقابل بطاقة الموزّع الظاهرة — مستخلصة من ملايين الأيدي المحاكاة.',
+      m_stratList: [
+        'قف على 12–16 الصلبة عندما يُظهر الموزّع 2–6: من المرجّح أن يحترق.',
+        'اسحب بالمجاميع نفسها مقابل 7–آس: الموزّع قوي، لذا عليك التحسّن.',
+        'ضاعف على 11 (وغالباً 10): بطاقة واحدة تمنحك فرصة قوية لـ20–21.',
+        'قسّم الآسات والثمانيات دائماً؛ لا تقسّم العشرات أو الخمسات أبداً.'
+      ],
+      m_disclaimer: 'هذه اللعبة للترفيه والتعليم فقط.'
     }
   };
 
-  let lang = (localStorage.getItem('br_lang') === 'he') ? 'he' : 'en';
+  const LANGS = ['en', 'he', 'ar'];
+  const RTL = { en:false, he:true, ar:true };
+  let lang = LANGS.includes(localStorage.getItem('br_lang')) ? localStorage.getItem('br_lang') : 'en';
   function t(key, ...args){
     const entry = (T[lang] && T[lang][key] !== undefined) ? T[lang][key] : T.en[key];
     return typeof entry === 'function' ? entry(...args) : entry;
@@ -489,6 +679,84 @@
     };
   })();
 
+  // ---------- Canvas FX engine (vanilla HTML5 Canvas) ----------
+  const FX = (() => {
+    const canvas = document.getElementById('fx');
+    const c = canvas.getContext('2d');
+    let parts = [], raf = null;
+    function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize();
+    window.addEventListener('resize', resize);
+    const COLORS = ['#e74c3c','#2ecc71','#3498db','#9b59b6','#f1c40f','#ecf0f1','#e67e22'];
+    const pick = () => COLORS[(Math.random()*COLORS.length)|0];
+
+    function drawChip(p){
+      c.save(); c.translate(p.x, p.y); c.rotate(p.rot);
+      c.globalAlpha = Math.max(0, Math.min(1, p.life / 40));
+      c.beginPath(); c.arc(0,0,p.r,0,7); c.fillStyle = p.color; c.fill();
+      c.lineWidth = 3; c.strokeStyle = 'rgba(255,255,255,.85)';
+      c.setLineDash([p.r*0.7, p.r*0.55]); c.stroke(); c.setLineDash([]);
+      c.beginPath(); c.arc(0,0,p.r*0.58,0,7); c.lineWidth = 2; c.strokeStyle = 'rgba(255,255,255,.6)'; c.stroke();
+      c.restore(); c.globalAlpha = 1;
+    }
+
+    function loop(){
+      c.clearRect(0,0,canvas.width,canvas.height);
+      for(let i = parts.length - 1; i >= 0; i--){
+        const p = parts[i];
+        p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life--;
+        if(p.type === 'chip'){
+          drawChip(p);
+        } else {
+          c.globalAlpha = Math.max(0, p.life / p.max);
+          c.fillStyle = p.color;
+          c.beginPath(); c.arc(p.x, p.y, p.r, 0, 7); c.fill();
+          c.globalAlpha = 1;
+        }
+        if(p.life <= 0 || p.y > canvas.height + 80) parts.splice(i, 1);
+      }
+      if(parts.length) raf = requestAnimationFrame(loop);
+      else { raf = null; c.clearRect(0,0,canvas.width,canvas.height); }
+    }
+    function start(){ if(!raf) raf = requestAnimationFrame(loop); }
+
+    function chips(n){
+      for(let i = 0; i < n; i++){
+        parts.push({
+          type:'chip',
+          x: Math.random()*canvas.width,
+          y: -30 - Math.random()*canvas.height*0.4,
+          vx: (Math.random()-0.5)*2.4, vy: Math.random()*2+2, g: 0.16,
+          r: 12 + Math.random()*9, color: pick(),
+          rot: Math.random()*6, vr: (Math.random()-0.5)*0.35,
+          life: 260, max: 260
+        });
+      }
+      start();
+    }
+    function burst(x, y){
+      const n = 44, base = pick();
+      for(let i = 0; i < n; i++){
+        const a = (Math.PI*2*i)/n + Math.random()*0.18;
+        const sp = 2 + Math.random()*4.2;
+        parts.push({
+          type:'spark', x, y,
+          vx: Math.cos(a)*sp, vy: Math.sin(a)*sp, g: 0.055,
+          r: 2 + Math.random()*2.2,
+          color: Math.random() < 0.55 ? base : pick(),
+          rot:0, vr:0, life: 52 + Math.random()*26, max: 78
+        });
+      }
+      start();
+    }
+    function fireworks(){
+      for(let k = 0; k < 5; k++){
+        setTimeout(() => burst(canvas.width*(0.18 + Math.random()*0.64), canvas.height*(0.18 + Math.random()*0.34)), k*220);
+      }
+    }
+    return { chips, fireworks };
+  })();
+
   // ---------- Cards / deck ----------
   const SUITS = [
     { s:'♠', color:'black' }, { s:'♥', color:'red' },
@@ -508,6 +776,8 @@
       const j = Math.floor(Math.random()*(i+1));
       [shoe[i],shoe[j]] = [shoe[j],shoe[i]];
     }
+    S.runningCount = 0;   // new shoe resets the Hi-Lo count
+    updateHUD();
   }
   function draw(){
     if(shoe.length < 20) buildShoe();
@@ -531,9 +801,20 @@
   function isSoft(cards){
     let total = 0, aces = 0;
     for(const c of cards){ total += cardValue(c.rank); if(c.rank==='A') aces++; }
-    // soft if an ace is still counted as 11 without busting
     while(total > 21 && aces > 0){ total -= 10; aces--; }
     return aces > 0;
+  }
+
+  // Hi-Lo value: 2–6 = +1, 7–9 = 0, 10/J/Q/K/A = −1
+  function hiLo(rank){
+    const v = cardValue(rank);
+    if(v >= 10) return -1;   // 10, J, Q, K, A(=11)
+    if(v >= 7) return 0;     // 7, 8, 9
+    return 1;                // 2–6
+  }
+  function countCard(card){
+    S.runningCount += hiLo(card.rank);
+    updateHUD();
   }
 
   // ---------- Game state ----------
@@ -542,12 +823,13 @@
     bet: 0,
     phase: 'betting',   // betting | player | dealer | over
     dealer: [],
-    hole: null,         // dealer's face-down card
+    hole: null,
     holeRevealed: false,
-    hands: [],          // player hands: {cards, bet, done, busted, doubled, isSplit, blackjack, result, resultKey}
+    hands: [],
     active: 0,
     busy: false,
-    msg: null           // {key, args} — kept so language toggle can re-render current message
+    msg: null,
+    runningCount: 0
   };
 
   // ---------- DOM ----------
@@ -560,7 +842,9 @@
     hit:$('hitBtn'), stand:$('standBtn'), double:$('doubleBtn'), split:$('splitBtn'),
     hint:$('hintBtn'), deal:$('dealBtn'), next:$('nextBtn'),
     clear:$('clearBet'), max:$('maxBet'), soundToggle:$('soundToggle'), resetBank:$('resetBank'),
-    lang:$('langToggle')
+    langSwitch:$('langSwitch'), howTo:$('howTo'),
+    rcVal:$('rcVal'), tcVal:$('tcVal'), decksVal:$('decksVal'), edgeVal:$('edgeVal'),
+    modal:$('modal'), modalBody:$('modalBody'), modalClose:$('modalClose')
   };
 
   // ---------- Persistence (localStorage only; no server) ----------
@@ -569,6 +853,30 @@
     if(Number.isFinite(v) && v > 0) S.balance = v;
   }
   function saveBank(){ localStorage.setItem('br_balance', String(S.balance)); }
+
+  // ---------- HUD ----------
+  function updateHUD(){
+    if(!el.rcVal) return;
+    const decksLeft = shoe.length / 52;
+    const tc = S.runningCount / Math.max(0.25, decksLeft);
+    const rc = S.runningCount;
+
+    el.rcVal.textContent = (rc > 0 ? '+' : '') + rc;
+    el.tcVal.textContent = (tc > 0 ? '+' : '') + tc.toFixed(1);
+    el.decksVal.textContent = decksLeft.toFixed(1);
+
+    const cls = v => v > 0 ? 'pos' : (v < 0 ? 'neg' : 'zero');
+    el.rcVal.className = 'val ' + cls(rc);
+    el.tcVal.className = 'val ' + cls(tc);
+
+    let key, c;
+    if(tc >= 2){ key = 'edgeHigh'; c = 'hi'; }
+    else if(tc <= -1){ key = 'edgeLow'; c = 'lo'; }
+    else { key = 'edgeNeutral'; c = 'mid'; }
+    S.edgeKey = key;
+    el.edgeVal.className = 'edge ' + c;
+    el.edgeVal.textContent = t(key);
+  }
 
   // ---------- Rendering ----------
   const delay = ms => new Promise(r => setTimeout(r, ms));
@@ -686,14 +994,14 @@
     syncWallet(); showPhaseControls();
     renderDealer(); renderPlayers();
     setMessage('dealing');
-    // disable actions during deal
     [el.hit,el.stand,el.double,el.split,el.hint].forEach(b=>b.setAttribute('disabled','true'));
 
     const p = S.hands[0];
-    p.cards.push(draw()); Sound.deal(); renderPlayers(); await delay(320);
-    S.dealer.push(draw()); Sound.deal(); renderDealer(); await delay(320);
-    p.cards.push(draw()); Sound.deal(); renderPlayers(); await delay(320);
-    S.hole = draw(); Sound.deal(); renderDealer(); await delay(300);
+    let card;
+    card = draw(); p.cards.push(card); countCard(card); Sound.deal(); renderPlayers(); await delay(320);
+    card = draw(); S.dealer.push(card); countCard(card); Sound.deal(); renderDealer(); await delay(320);
+    card = draw(); p.cards.push(card); countCard(card); Sound.deal(); renderPlayers(); await delay(320);
+    S.hole = draw(); Sound.deal(); renderDealer(); await delay(300);   // hole stays hidden, counted on reveal
 
     const playerBJ = handTotal(p.cards) === 21;
     const dealerBJ = handTotal([...S.dealer, S.hole]) === 21;
@@ -716,7 +1024,7 @@
     if(S.busy || S.phase !== 'player') return;
     const h = S.hands[S.active];
     S.busy = true;
-    h.cards.push(draw()); Sound.deal(); renderPlayers();
+    const nc = draw(); h.cards.push(nc); countCard(nc); Sound.deal(); renderPlayers();
     await delay(250);
     const tot = handTotal(h.cards);
     if(tot > 21){
@@ -726,7 +1034,6 @@
       await nextHandOrDealer();
     } else {
       updateActionButtons();
-      // after first hit, double/split no longer available for this hand
       el.double.setAttribute('disabled','true');
       el.split.setAttribute('disabled','true');
       setMessage('youHave', tot);
@@ -747,7 +1054,7 @@
     S.busy = true;
     S.balance -= h.bet; h.bet *= 2; h.doubled = true;
     Sound.chip(); syncWallet();
-    h.cards.push(draw()); Sound.deal(); renderPlayers();
+    const nc = draw(); h.cards.push(nc); countCard(nc); Sound.deal(); renderPlayers();
     await delay(300);
     const tot = handTotal(h.cards);
     if(tot > 21){ h.busted = true; Sound.bust(); setMessage('doubledBust', tot); }
@@ -768,20 +1075,17 @@
     S.busy = true;
     S.balance -= h.bet; syncWallet(); Sound.chip();
 
-    const moved = h.cards.pop();
+    const moved = h.cards.pop();   // already counted when first dealt
     const newHand = { cards:[moved], bet:h.bet, done:false, busted:false, doubled:false, isSplit:true, blackjack:false, result:'', resultKey:'' };
     h.isSplit = true;
     S.hands.splice(S.active + 1, 0, newHand);
 
     const splittingAces = moved.rank === 'A';
 
-    // deal one card to the first (current) hand
-    h.cards.push(draw()); Sound.deal(); renderPlayers(); await delay(280);
-    // deal one card to the new hand
-    newHand.cards.push(draw()); Sound.deal(); renderPlayers(); await delay(280);
+    let c1 = draw(); h.cards.push(c1); countCard(c1); Sound.deal(); renderPlayers(); await delay(280);
+    let c2 = draw(); newHand.cards.push(c2); countCard(c2); Sound.deal(); renderPlayers(); await delay(280);
 
     if(splittingAces){
-      // split aces get one card each, then auto-stand
       h.done = true; newHand.done = true;
       setMessage('splitAces');
       await delay(500);
@@ -794,7 +1098,6 @@
   }
 
   async function nextHandOrDealer(){
-    // find first not-done hand (split inserts a new hand after current)
     const idx = S.hands.findIndex(h => !h.done);
     if(idx !== -1){
       S.active = idx;
@@ -804,14 +1107,15 @@
       setMessage('playingHandOf', S.active + 1, S.hands.length);
       return;
     }
-    // all hands done -> dealer plays
     await dealerPlay();
   }
 
   async function revealHole(){
     if(S.holeRevealed) return;
     S.holeRevealed = true;
-    S.dealer.push(S.hole);
+    const hc = S.hole;
+    countCard(hc);           // hole card becomes visible → now counted
+    S.dealer.push(hc);
     S.hole = null;
     Sound.flip();
     renderDealer();
@@ -829,11 +1133,10 @@
       setMessage('dealerTurn');
       while(handTotal(S.dealer) < 17){
         await delay(550);
-        S.dealer.push(draw()); Sound.deal(); renderDealer();
+        const dc = draw(); S.dealer.push(dc); countCard(dc); Sound.deal(); renderDealer();
       }
       await delay(400);
-      const dt = handTotal(S.dealer);
-      if(dt > 21) Sound.bust();
+      if(handTotal(S.dealer) > 21) Sound.bust();
     }
     finishRound();
   }
@@ -866,7 +1169,6 @@
     syncWallet(); flashBalance(); saveBank();
     renderDealer(); renderPlayers(); showPhaseControls();
 
-    // overall message + sound
     const anyBJ = S.hands.some(h => h.blackjack && h.result === 'win');
     if(wins > 0 && loses === 0){
       setMessage(anyBJ ? 'blackjackWin' : 'youWin');
@@ -882,11 +1184,9 @@
       wins >= loses ? Sound.win() : Sound.lose();
     }
 
-    if(S.balance <= 0){
-      S.balance = 1000;
-      saveBank(); syncWallet();
-      showToast(() => t('outOfChips'));
-    }
+    // Celebration effects
+    if(anyBJ){ FX.fireworks(); FX.chips(48); }
+    else if(wins > 0){ FX.chips(wins > loses ? 34 : 22); }
   }
 
   function newHand(){
@@ -902,35 +1202,32 @@
   }
 
   // ---------- Basic Strategy Hint ----------
-  // Returns 'HIT' | 'STAND' | 'DOUBLE' | 'SPLIT'
   function basicStrategy(cards, dealerUpRank, canDouble, canSplit){
-    const up = cardValue(dealerUpRank); // 2..10, A=11
+    const up = cardValue(dealerUpRank);
     const total = handTotal(cards);
     const soft = isSoft(cards);
     const isPair = cards.length === 2 && cardValue(cards[0].rank) === cardValue(cards[1].rank);
     const pairVal = isPair ? cardValue(cards[0].rank) : 0;
 
-    // Pairs
     if(isPair && canSplit){
-      if(pairVal === 11) return 'SPLIT';                       // A,A
-      if(pairVal === 10) return 'STAND';                       // 10,10
+      if(pairVal === 11) return 'SPLIT';
+      if(pairVal === 10) return 'STAND';
       if(pairVal === 9)  return (up===7||up===10||up===11) ? 'STAND' : 'SPLIT';
       if(pairVal === 8)  return 'SPLIT';
       if(pairVal === 7)  return (up>=2&&up<=7) ? 'SPLIT' : 'HIT';
       if(pairVal === 6)  return (up>=2&&up<=6) ? 'SPLIT' : 'HIT';
-      if(pairVal === 5)  return (up>=2&&up<=9 && canDouble) ? 'DOUBLE' : 'HIT'; // treat as 10
+      if(pairVal === 5)  return (up>=2&&up<=9 && canDouble) ? 'DOUBLE' : 'HIT';
       if(pairVal === 4)  return (up===5||up===6) ? 'SPLIT' : 'HIT';
       if(pairVal === 3)  return (up>=2&&up<=7) ? 'SPLIT' : 'HIT';
       if(pairVal === 2)  return (up>=2&&up<=7) ? 'SPLIT' : 'HIT';
     }
 
-    // Soft totals
     if(soft){
-      if(total >= 19) return 'STAND';                          // soft 19,20,21
+      if(total >= 19) return 'STAND';
       if(total === 18){
         if(up>=3 && up<=6) return canDouble ? 'DOUBLE' : 'STAND';
         if(up===2 || up===7 || up===8) return 'STAND';
-        return 'HIT';                                          // 9,10,A
+        return 'HIT';
       }
       if(total === 17) return (up>=3&&up<=6 && canDouble) ? 'DOUBLE' : 'HIT';
       if(total === 16 || total === 15) return (up>=4&&up<=6 && canDouble) ? 'DOUBLE' : 'HIT';
@@ -938,7 +1235,6 @@
       return 'HIT';
     }
 
-    // Hard totals
     if(total >= 17) return 'STAND';
     if(total >= 13 && total <= 16) return (up>=2&&up<=6) ? 'STAND' : 'HIT';
     if(total === 12) return (up>=4&&up<=6) ? 'STAND' : 'HIT';
@@ -961,26 +1257,54 @@
     showToast(() => t('hintMsg', rec, up.rank));
   }
 
+  // ---------- Instructions modal ----------
+  function buildModal(){
+    return `
+      <h2>${t('modalTitle')}</h2>
+      <h3>${t('m_goalH')}</h3><p>${t('m_goalP')}</p>
+      <h3>${t('m_actionsH')}</h3><ul>${t('m_actionsList').map(x => `<li>${x}</li>`).join('')}</ul>
+      <h3>${t('m_countH')}</h3><p>${t('m_countP')}</p><p>${t('m_countP2')}</p>
+      <h3>${t('m_stratH')}</h3><p>${t('m_stratP')}</p><ul>${t('m_stratList').map(x => `<li>${x}</li>`).join('')}</ul>
+      <p style="opacity:.6;font-size:.8rem;margin-top:14px">${t('m_disclaimer')}</p>
+    `;
+  }
+  function openModal(){
+    el.modalBody.innerHTML = buildModal();
+    el.modalBody.dir = RTL[lang] ? 'rtl' : 'ltr';
+    el.modal.classList.remove('hidden');
+    requestAnimationFrame(() => el.modal.classList.add('show'));
+    Sound.resume(); Sound.chip();
+  }
+  function closeModal(){
+    el.modal.classList.remove('show');
+    setTimeout(() => el.modal.classList.add('hidden'), 250);
+  }
+
   // ---------- Language switching ----------
   function applyLanguage(){
     document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = t(e.dataset.i18n); });
     el.soundToggle.textContent = t(Sound.on() ? 'soundOn' : 'soundOff');
-    el.lang.textContent = (lang === 'en') ? 'עברית' : 'EN';
-    el.lang.setAttribute('aria-label', lang === 'en' ? 'Switch to Hebrew' : 'Switch to English');
+    el.langSwitch.querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.lang === lang));
     document.documentElement.lang = lang;
-    const dir = (lang === 'he') ? 'rtl' : 'ltr';
+    const dir = RTL[lang] ? 'rtl' : 'ltr';
     el.message.dir = dir;
     el.toast.dir = dir;
     renderMessage();
+    updateHUD();
     if(S.hands.length) renderPlayers();
     if(el.toast.classList.contains('show') && toastRender) el.toast.innerHTML = toastRender();
+    if(!el.modal.classList.contains('hidden')){
+      el.modalBody.innerHTML = buildModal();
+      el.modalBody.dir = dir;
+    }
   }
 
-  function toggleLanguage(){
+  function setLanguage(next){
+    if(next === lang || !LANGS.includes(next)) return;
     Sound.resume(); Sound.chip();
     document.body.classList.add('lang-fade');
     setTimeout(() => {
-      lang = (lang === 'en') ? 'he' : 'en';
+      lang = next;
       localStorage.setItem('br_lang', lang);
       applyLanguage();
       document.body.classList.remove('lang-fade');
@@ -999,7 +1323,13 @@
   el.split.addEventListener('click', playerSplit);
   el.hint.addEventListener('click', showHint);
   el.next.addEventListener('click', newHand);
-  el.lang.addEventListener('click', toggleLanguage);
+
+  el.langSwitch.querySelectorAll('button').forEach(b =>
+    b.addEventListener('click', () => setLanguage(b.dataset.lang)));
+
+  el.howTo.addEventListener('click', openModal);
+  el.modalClose.addEventListener('click', closeModal);
+  el.modal.addEventListener('click', (e) => { if(e.target === el.modal) closeModal(); });
 
   el.soundToggle.addEventListener('click', () => {
     const on = Sound.toggle();
@@ -1010,8 +1340,8 @@
     if(S.phase === 'betting'){ S.balance = 1000; S.bet = 0; saveBank(); syncWallet(); updateChipButtons(); showToast(() => t('bankReset')); }
   });
 
-  // keyboard shortcuts
   document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && !el.modal.classList.contains('hidden')){ closeModal(); return; }
     if(S.phase === 'player'){
       if(e.key === 'h') playerHit();
       else if(e.key === 's') playerStand();
