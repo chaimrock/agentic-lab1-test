@@ -38,6 +38,8 @@
     justify-content: space-between;
     padding: 14px 26px;
     background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0));
+    gap: 14px;
+    flex-wrap: wrap;
   }
 
   .brand {
@@ -48,6 +50,8 @@
     text-shadow: 0 2px 6px rgba(0,0,0,0.5);
   }
   .brand small { display:block; font-size:.62rem; letter-spacing:3px; color:#cbb36a; opacity:.8; }
+
+  .header-right { display:flex; align-items:center; gap:14px; }
 
   .wallet {
     display: flex;
@@ -67,6 +71,17 @@
   .wallet .value { font-size:1.15rem; color:#fff; }
   #balance.flash { animation: flash .6s ease; }
   @keyframes flash { 0%,100%{color:#fff;} 50%{color:var(--gold); transform:scale(1.12);} }
+
+  #langToggle {
+    font-family: inherit; cursor: pointer;
+    background: rgba(0,0,0,0.3); color: var(--gold);
+    border: 1px solid var(--gold-dim); border-radius: 999px;
+    padding: 9px 18px; font-weight: 700; font-size: .92rem;
+    letter-spacing: .5px;
+    transition: background .2s, transform .1s, opacity .22s;
+  }
+  #langToggle:hover { background: rgba(232,199,102,0.18); }
+  #langToggle:active { transform: scale(.95); }
 
   .table {
     position: relative;
@@ -203,7 +218,7 @@
   .bet-display { text-align:center; margin-bottom:12px; font-size:1rem; }
   .bet-display b { color:var(--gold); font-size:1.3rem; }
 
-  .footer-links { font-size:.72rem; color:#9db5a6; padding: 6px; display:flex; gap:16px; align-items:center; }
+  .footer-links { font-size:.72rem; color:#9db5a6; padding: 6px; display:flex; gap:16px; align-items:center; flex-wrap:wrap; justify-content:center; }
   .footer-links a, .footer-links span.lk { color:#cbb36a; cursor:pointer; text-decoration:underline; }
   .sound-toggle { cursor:pointer; }
 
@@ -219,6 +234,16 @@
 
   .hidden { display:none !important; }
 
+  /* Smooth language-switch fade */
+  header, .message, .controls, .footer-links, .area .tag {
+    transition: opacity .22s ease;
+  }
+  body.lang-fade header,
+  body.lang-fade .message,
+  body.lang-fade .controls,
+  body.lang-fade .footer-links,
+  body.lang-fade .area .tag { opacity: 0; }
+
   @media (max-width: 560px) {
     .card { width: 72px; height: 100px; }
     .cards .card:not(:first-child){ margin-left:-34px; }
@@ -229,10 +254,13 @@
 </head>
 <body>
   <header>
-    <div class="brand">♠ Casino Royale ♥<small>BLACKJACK · PAYS 3 TO 2</small></div>
-    <div class="wallet">
-      <div class="pill"><span class="label">Balance</span><span class="value">$<span id="balance">1000</span></span></div>
-      <div class="pill"><span class="label">Bet</span><span class="value">$<span id="betAmount">0</span></span></div>
+    <div class="brand">♠ Casino Royale ♥<small data-i18n="brandSub">BLACKJACK · PAYS 3 TO 2</small></div>
+    <div class="header-right">
+      <div class="wallet">
+        <div class="pill"><span class="label" data-i18n="balanceLabel">Balance</span><span class="value">$<span id="balance">1000</span></span></div>
+        <div class="pill"><span class="label" data-i18n="betLabel">Bet</span><span class="value">$<span id="betAmount">0</span></span></div>
+      </div>
+      <button id="langToggle" aria-label="Switch language">עברית</button>
     </div>
   </header>
 
@@ -240,7 +268,7 @@
     <div class="felt-ring"></div>
 
     <div class="area" id="dealerArea">
-      <div class="tag">Dealer</div>
+      <div class="tag" data-i18n="dealer">Dealer</div>
       <div class="hands-row">
         <div class="hand">
           <div class="cards" id="dealerCards"></div>
@@ -253,13 +281,13 @@
 
     <div class="area" id="playerArea">
       <div class="hands-row" id="playerHands"></div>
-      <div class="tag" style="margin-top:6px">Player</div>
+      <div class="tag" style="margin-top:6px" data-i18n="player">Player</div>
     </div>
 
     <div class="controls">
       <!-- Betting phase -->
       <div id="bettingControls">
-        <div class="bet-display">Current wager: <b>$<span id="betDisplay">0</span></b></div>
+        <div class="bet-display"><span data-i18n="currentWager">Current wager:</span> <b>$<span id="betDisplay">0</span></b></div>
         <div class="chips">
           <div class="chip c5"   data-val="5">$5</div>
           <div class="chip c25"  data-val="25">$25</div>
@@ -267,35 +295,35 @@
           <div class="chip c500" data-val="500">$500</div>
         </div>
         <div class="btn-row">
-          <button class="action secondary" id="clearBet">Clear</button>
-          <button class="action secondary" id="maxBet">Max</button>
-          <button class="action" id="dealBtn">Deal</button>
+          <button class="action secondary" id="clearBet" data-i18n="clear">Clear</button>
+          <button class="action secondary" id="maxBet" data-i18n="max">Max</button>
+          <button class="action" id="dealBtn" data-i18n="deal">Deal</button>
         </div>
       </div>
 
       <!-- Play phase -->
       <div id="playControls" class="hidden">
         <div class="btn-row">
-          <button class="action" id="hitBtn">Hit</button>
-          <button class="action" id="standBtn">Stand</button>
-          <button class="action secondary" id="doubleBtn">Double</button>
-          <button class="action secondary" id="splitBtn">Split</button>
-          <button class="action hint" id="hintBtn">💡 Hint</button>
+          <button class="action" id="hitBtn" data-i18n="hit">Hit</button>
+          <button class="action" id="standBtn" data-i18n="stand">Stand</button>
+          <button class="action secondary" id="doubleBtn" data-i18n="double">Double</button>
+          <button class="action secondary" id="splitBtn" data-i18n="split">Split</button>
+          <button class="action hint" id="hintBtn" data-i18n="hint">💡 Hint</button>
         </div>
       </div>
 
       <!-- Round over -->
       <div id="overControls" class="hidden">
         <div class="btn-row">
-          <button class="action" id="nextBtn">New Hand</button>
+          <button class="action" id="nextBtn" data-i18n="newHand">New Hand</button>
         </div>
       </div>
     </div>
 
     <div class="footer-links">
       <span class="sound-toggle lk" id="soundToggle">🔊 Sound: On</span>
-      <span class="lk" id="resetBank">Reset bankroll</span>
-      <span>Dealer stands on 17 · 6-deck shoe</span>
+      <span class="lk" id="resetBank" data-i18n="resetBank">Reset bankroll</span>
+      <span id="rulesText" data-i18n="rules">Dealer stands on 17 · 6-deck shoe</span>
     </div>
   </div>
 
@@ -304,6 +332,130 @@
 <script>
 (() => {
   "use strict";
+
+  // ---------- Internationalization (i18n) ----------
+  const T = {
+    en: {
+      brandSub: 'BLACKJACK · PAYS 3 TO 2',
+      balanceLabel: 'Balance',
+      betLabel: 'Bet',
+      dealer: 'Dealer',
+      player: 'Player',
+      currentWager: 'Current wager:',
+      clear: 'Clear',
+      max: 'Max',
+      deal: 'Deal',
+      hit: 'Hit',
+      stand: 'Stand',
+      double: 'Double',
+      split: 'Split',
+      hint: '💡 Hint',
+      newHand: 'New Hand',
+      resetBank: 'Reset bankroll',
+      rules: 'Dealer stands on 17 · 6-deck shoe',
+      soundOn: '🔊 Sound: On',
+      soundOff: '🔇 Sound: Off',
+      // messages
+      placeBet: 'Place your bet to begin.',
+      dealing: 'Dealing…',
+      yourMove: 'Your move. Hit, Stand, Double or Split?',
+      bustOn: (t) => `Bust on ${t}!`,
+      youHave: (t) => `You have ${t}.`,
+      doubledBust: (t) => `Doubled and busted on ${t}!`,
+      doubledStand: (t) => `Doubled — standing on ${t}.`,
+      splitAces: 'Split aces — one card each.',
+      playingHand: (i) => `Playing hand ${i}.`,
+      playingHandOf: (i, n) => `Playing hand ${i} of ${n}.`,
+      dealerTurn: "Dealer's turn…",
+      blackjackWin: 'Blackjack! You win big! 🎉',
+      youWin: 'You win! 🎉',
+      dealerWins: 'Dealer wins this round.',
+      pushReturned: 'Push — bet returned.',
+      results: (w, l, p) => `Results: ${w} win · ${l} loss · ${p} push.`,
+      // hand labels
+      softPrefix: 'soft ',
+      won: 'Win',
+      lost: 'Lost',
+      pushTag: 'Push',
+      bjWin: 'Blackjack!',
+      // toasts
+      outOfChips: "You're out of chips — the house grants you a fresh <b>$1000</b> stake. Good luck!",
+      bankReset: 'Bankroll reset to <b>$1000</b>.',
+      hintMsg: (rec, up) => {
+        const names = { HIT:'Hit', STAND:'Stand', DOUBLE:'Double Down', SPLIT:'Split' };
+        const why = {
+          HIT:'your total is low enough that drawing improves your odds',
+          STAND:'the dealer is likely to bust or you already hold a strong total',
+          DOUBLE:'you have an edge here — maximize the bet on one extra card',
+          SPLIT:'splitting turns a weak pair into two stronger starting hands'
+        };
+        return `Basic strategy says: <b>${names[rec]}</b><br><span style="font-size:.82rem;opacity:.85">vs dealer ${up} — ${why[rec]}.</span>`;
+      }
+    },
+    he: {
+      brandSub: "בלאק-ג'ק · משלם 3 ל-2",
+      balanceLabel: 'יתרה',
+      betLabel: 'הימור',
+      dealer: 'דילר',
+      player: 'שחקן',
+      currentWager: 'סכום ההימור:',
+      clear: 'נקה',
+      max: 'מקסימום',
+      deal: 'חלק',
+      hit: 'קח קלף',
+      stand: 'עצור',
+      double: 'הכפל',
+      split: 'פצל',
+      hint: '💡 רמז',
+      newHand: 'יד חדשה',
+      resetBank: 'אפס קופה',
+      rules: 'הדילר עוצר על 17 · 6 חפיסות',
+      soundOn: '🔊 צליל: פועל',
+      soundOff: '🔇 צליל: כבוי',
+      // messages
+      placeBet: 'הניחו הימור כדי להתחיל.',
+      dealing: 'מחלק…',
+      yourMove: 'תורך. קח קלף, עצור, הכפל או פצל?',
+      bustOn: (t) => `נשרפת על ${t}!`,
+      youHave: (t) => `יש לך ${t}.`,
+      doubledBust: (t) => `הכפלת ונשרפת על ${t}!`,
+      doubledStand: (t) => `הכפלת — עוצר על ${t}.`,
+      splitAces: 'פיצול אסים — קלף אחד לכל יד.',
+      playingHand: (i) => `משחק יד ${i}.`,
+      playingHandOf: (i, n) => `משחק יד ${i} מתוך ${n}.`,
+      dealerTurn: 'תור הדילר…',
+      blackjackWin: "בלאק-ג'ק! זכייה גדולה! 🎉",
+      youWin: 'ניצחת! 🎉',
+      dealerWins: 'הדילר מנצח בסיבוב זה.',
+      pushReturned: 'תיקו — ההימור הוחזר.',
+      results: (w, l, p) => `תוצאות: ${w} זכיות · ${l} הפסדים · ${p} תיקו.`,
+      // hand labels
+      softPrefix: 'רך ',
+      won: 'זכייה',
+      lost: 'הפסד',
+      pushTag: 'תיקו',
+      bjWin: "בלאק-ג'ק!",
+      // toasts
+      outOfChips: "נגמרו הז'יטונים — הקזינו מעניק לך מחדש <b>$1000</b>. בהצלחה!",
+      bankReset: 'הקופה אופסה ל-<b>$1000</b>.',
+      hintMsg: (rec, up) => {
+        const names = { HIT:'קח קלף', STAND:'עצור', DOUBLE:'הכפל', SPLIT:'פצל' };
+        const why = {
+          HIT:'הסכום שבידך נמוך מספיק כך שמשיכת קלף משפרת את הסיכויים',
+          STAND:'סביר שהדילר יישרף או שכבר יש בידך סכום חזק',
+          DOUBLE:'יש לך יתרון כאן — הגדל את ההימור על קלף נוסף אחד',
+          SPLIT:'פיצול הופך זוג חלש לשתי ידיים פותחות חזקות יותר'
+        };
+        return `האסטרטגיה הבסיסית ממליצה: <b>${names[rec]}</b><br><span style="font-size:.82rem;opacity:.85">מול הדילר ${up} — ${why[rec]}.</span>`;
+      }
+    }
+  };
+
+  let lang = (localStorage.getItem('br_lang') === 'he') ? 'he' : 'en';
+  function t(key, ...args){
+    const entry = (T[lang] && T[lang][key] !== undefined) ? T[lang][key] : T.en[key];
+    return typeof entry === 'function' ? entry(...args) : entry;
+  }
 
   // ---------- Sound engine (Web Audio API, no files) ----------
   const Sound = (() => {
@@ -324,6 +476,7 @@
     }
     return {
       toggle(){ enabled = !enabled; if(enabled) ac(); return enabled; },
+      on(){ return enabled; },
       resume(){ const c = ac(); if(c && c.state === 'suspended') c.resume(); },
       deal(){ tone(320, 0.08, 'triangle', 0.18); tone(180,0.06,'square',0.05,0.01); },
       chip(){ tone(880,0.05,'square',0.12); tone(1200,0.05,'square',0.08,0.04); },
@@ -391,9 +544,10 @@
     dealer: [],
     hole: null,         // dealer's face-down card
     holeRevealed: false,
-    hands: [],          // player hands: {cards, bet, done, busted, doubled, isSplit, blackjack, result}
+    hands: [],          // player hands: {cards, bet, done, busted, doubled, isSplit, blackjack, result, resultKey}
     active: 0,
-    busy: false
+    busy: false,
+    msg: null           // {key, args} — kept so language toggle can re-render current message
   };
 
   // ---------- DOM ----------
@@ -405,7 +559,8 @@
     betting:$('bettingControls'), play:$('playControls'), over:$('overControls'),
     hit:$('hitBtn'), stand:$('standBtn'), double:$('doubleBtn'), split:$('splitBtn'),
     hint:$('hintBtn'), deal:$('dealBtn'), next:$('nextBtn'),
-    clear:$('clearBet'), max:$('maxBet'), soundToggle:$('soundToggle'), resetBank:$('resetBank')
+    clear:$('clearBet'), max:$('maxBet'), soundToggle:$('soundToggle'), resetBank:$('resetBank'),
+    lang:$('langToggle')
   };
 
   // ---------- Persistence (localStorage only; no server) ----------
@@ -452,14 +607,14 @@
       h.cards.forEach(c => cards.appendChild(cardEl(c, false)));
       const score = document.createElement('div');
       score.className = 'score-badge';
-      const t = handTotal(h.cards);
-      score.textContent = (isSoft(h.cards) && t !== 21 ? 'soft ' : '') + t + (t > 21 ? ' 💥' : '');
+      const tot = handTotal(h.cards);
+      score.textContent = (isSoft(h.cards) && tot !== 21 ? t('softPrefix') : '') + tot + (tot > 21 ? ' 💥' : '');
       const bet = document.createElement('div');
       bet.className = 'bet-tag';
       bet.textContent = '$' + h.bet + (h.doubled ? ' (x2)' : '');
       const res = document.createElement('div');
       res.className = 'result-tag ' + (h.result || '');
-      res.textContent = h.resultText || '';
+      res.textContent = h.resultKey ? t(h.resultKey) : '';
       wrap.append(cards, score, bet, res);
       el.playerHands.appendChild(wrap);
     });
@@ -472,11 +627,13 @@
   }
   function flashBalance(){ el.balance.classList.remove('flash'); void el.balance.offsetWidth; el.balance.classList.add('flash'); }
 
-  function setMessage(t){ el.message.textContent = t; }
+  function setMessage(key, ...args){ S.msg = { key, args }; renderMessage(); }
+  function renderMessage(){ if(S.msg) el.message.textContent = t(S.msg.key, ...S.msg.args); }
 
-  let toastTimer;
-  function toast(html){
-    el.toast.innerHTML = html;
+  let toastTimer, toastRender = null;
+  function showToast(renderFn){
+    toastRender = renderFn;
+    el.toast.innerHTML = renderFn();
     el.toast.classList.add('show');
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => el.toast.classList.remove('show'), 3200);
@@ -524,11 +681,11 @@
     S.balance -= S.bet;
     S.phase = 'player';
     S.dealer = []; S.hole = null; S.holeRevealed = false;
-    S.hands = [{ cards:[], bet:S.bet, done:false, busted:false, doubled:false, isSplit:false, blackjack:false, result:'', resultText:'' }];
+    S.hands = [{ cards:[], bet:S.bet, done:false, busted:false, doubled:false, isSplit:false, blackjack:false, result:'', resultKey:'' }];
     S.active = 0;
     syncWallet(); showPhaseControls();
     renderDealer(); renderPlayers();
-    setMessage('Dealing…');
+    setMessage('dealing');
     // disable actions during deal
     [el.hit,el.stand,el.double,el.split,el.hint].forEach(b=>b.setAttribute('disabled','true'));
 
@@ -552,7 +709,7 @@
     S.busy = false;
     [el.hit,el.stand,el.hint].forEach(b=>b.removeAttribute('disabled'));
     updateActionButtons();
-    setMessage('Your move. Hit, Stand, Double or Split?');
+    setMessage('yourMove');
   }
 
   async function playerHit(){
@@ -561,10 +718,10 @@
     S.busy = true;
     h.cards.push(draw()); Sound.deal(); renderPlayers();
     await delay(250);
-    const t = handTotal(h.cards);
-    if(t > 21){
+    const tot = handTotal(h.cards);
+    if(tot > 21){
       h.busted = true; h.done = true; Sound.bust();
-      setMessage('Bust on ' + t + '!');
+      setMessage('bustOn', tot);
       await delay(500);
       await nextHandOrDealer();
     } else {
@@ -572,7 +729,7 @@
       // after first hit, double/split no longer available for this hand
       el.double.setAttribute('disabled','true');
       el.split.setAttribute('disabled','true');
-      setMessage('You have ' + t + '.');
+      setMessage('youHave', tot);
     }
     S.busy = false;
   }
@@ -592,9 +749,9 @@
     Sound.chip(); syncWallet();
     h.cards.push(draw()); Sound.deal(); renderPlayers();
     await delay(300);
-    const t = handTotal(h.cards);
-    if(t > 21){ h.busted = true; Sound.bust(); setMessage('Doubled and busted on ' + t + '!'); }
-    else setMessage('Doubled — standing on ' + t + '.');
+    const tot = handTotal(h.cards);
+    if(tot > 21){ h.busted = true; Sound.bust(); setMessage('doubledBust', tot); }
+    else setMessage('doubledStand', tot);
     h.done = true;
     await delay(500);
     await nextHandOrDealer();
@@ -612,7 +769,7 @@
     S.balance -= h.bet; syncWallet(); Sound.chip();
 
     const moved = h.cards.pop();
-    const newHand = { cards:[moved], bet:h.bet, done:false, busted:false, doubled:false, isSplit:true, blackjack:false, result:'', resultText:'' };
+    const newHand = { cards:[moved], bet:h.bet, done:false, busted:false, doubled:false, isSplit:true, blackjack:false, result:'', resultKey:'' };
     h.isSplit = true;
     S.hands.splice(S.active + 1, 0, newHand);
 
@@ -626,29 +783,25 @@
     if(splittingAces){
       // split aces get one card each, then auto-stand
       h.done = true; newHand.done = true;
-      setMessage('Split aces — one card each.');
+      setMessage('splitAces');
       await delay(500);
       await nextHandOrDealer();
     } else {
       updateActionButtons();
-      setMessage('Playing hand ' + (S.active + 1) + '.');
+      setMessage('playingHand', S.active + 1);
     }
     S.busy = false;
   }
 
   async function nextHandOrDealer(){
-    // advance to next unfinished hand
-    let idx = S.active;
-    while(idx < S.hands.length && S.hands[idx].done) idx++;
-    // find first not-done from start (split inserts a new hand after current)
-    idx = S.hands.findIndex(h => !h.done);
+    // find first not-done hand (split inserts a new hand after current)
+    const idx = S.hands.findIndex(h => !h.done);
     if(idx !== -1){
       S.active = idx;
       renderPlayers();
-      updateActionButtons();
       el.double.removeAttribute('disabled');
       updateActionButtons();
-      setMessage('Playing hand ' + (S.active + 1) + ' of ' + S.hands.length + '.');
+      setMessage('playingHandOf', S.active + 1, S.hands.length);
       return;
     }
     // all hands done -> dealer plays
@@ -673,7 +826,7 @@
 
     const anyAlive = S.hands.some(h => !h.busted);
     if(anyAlive){
-      setMessage("Dealer's turn…");
+      setMessage('dealerTurn');
       while(handTotal(S.dealer) < 17){
         await delay(550);
         S.dealer.push(draw()); Sound.deal(); renderDealer();
@@ -688,24 +841,23 @@
   function finishRound(){
     const dt = handTotal(S.holeRevealed ? S.dealer : [...S.dealer, S.hole]);
     const dealerBJ = dt === 21 && (S.holeRevealed ? S.dealer.length === 2 : (S.dealer.length + 1) === 2);
-    let net = 0;        // change relative to amounts already wagered
     let wins = 0, loses = 0, pushes = 0;
 
     for(const h of S.hands){
       const pt = handTotal(h.cards);
       if(h.busted){
-        h.result = 'lose'; h.resultText = 'Lost'; loses++;
+        h.result = 'lose'; h.resultKey = 'lost'; loses++;
       } else if(h.blackjack){
-        if(dealerBJ){ h.result='push'; h.resultText='Push'; S.balance += h.bet; pushes++; }
-        else { h.result='win'; h.resultText='Blackjack!'; const pay = h.bet + Math.floor(h.bet*1.5); S.balance += h.bet + Math.floor(h.bet*1.5); net += Math.floor(h.bet*1.5); wins++; }
+        if(dealerBJ){ h.result='push'; h.resultKey='pushTag'; S.balance += h.bet; pushes++; }
+        else { h.result='win'; h.resultKey='bjWin'; S.balance += h.bet + Math.floor(h.bet*1.5); wins++; }
       } else if(dt > 21){
-        h.result='win'; h.resultText='Win'; S.balance += h.bet*2; net += h.bet; wins++;
+        h.result='win'; h.resultKey='won'; S.balance += h.bet*2; wins++;
       } else if(pt > dt){
-        h.result='win'; h.resultText='Win'; S.balance += h.bet*2; net += h.bet; wins++;
+        h.result='win'; h.resultKey='won'; S.balance += h.bet*2; wins++;
       } else if(pt === dt){
-        h.result='push'; h.resultText='Push'; S.balance += h.bet; pushes++;
+        h.result='push'; h.resultKey='pushTag'; S.balance += h.bet; pushes++;
       } else {
-        h.result='lose'; h.resultText='Lost'; loses++;
+        h.result='lose'; h.resultKey='lost'; loses++;
       }
     }
 
@@ -717,23 +869,23 @@
     // overall message + sound
     const anyBJ = S.hands.some(h => h.blackjack && h.result === 'win');
     if(wins > 0 && loses === 0){
-      setMessage(anyBJ ? 'Blackjack! You win big! 🎉' : 'You win! 🎉');
+      setMessage(anyBJ ? 'blackjackWin' : 'youWin');
       anyBJ ? Sound.blackjack() : Sound.win();
     } else if(wins === 0 && loses > 0 && pushes === 0){
-      setMessage('Dealer wins this round.');
+      setMessage('dealerWins');
       Sound.lose();
     } else if(wins === 0 && loses === 0){
-      setMessage('Push — bet returned.');
+      setMessage('pushReturned');
       Sound.push();
     } else {
-      setMessage(`Results: ${wins} win · ${loses} loss · ${pushes} push.`);
+      setMessage('results', wins, loses, pushes);
       wins >= loses ? Sound.win() : Sound.lose();
     }
 
     if(S.balance <= 0){
       S.balance = 1000;
       saveBank(); syncWallet();
-      toast("You're out of chips — the house grants you a fresh <b>$1000</b> stake. Good luck!");
+      showToast(() => t('outOfChips'));
     }
   }
 
@@ -746,7 +898,7 @@
     el.dealerCards.innerHTML = ''; el.dealerScore.textContent = '—';
     el.playerHands.innerHTML = '';
     showPhaseControls();
-    setMessage('Place your bet to begin.');
+    setMessage('placeBet');
   }
 
   // ---------- Basic Strategy Hint ----------
@@ -806,14 +958,33 @@
       cardValue(h.cards[0].rank) === cardValue(h.cards[1].rank) &&
       S.balance >= h.bet && S.hands.length < 4;
     const rec = basicStrategy(h.cards, up.rank, canDouble, canSplit);
-    const names = { HIT:'Hit', STAND:'Stand', DOUBLE:'Double Down', SPLIT:'Split' };
-    const why = {
-      HIT:'your total is low enough that drawing improves your odds',
-      STAND:'the dealer is likely to bust or you already hold a strong total',
-      DOUBLE:'you have an edge here — maximize the bet on one extra card',
-      SPLIT:'splitting turns a weak pair into two stronger starting hands'
-    };
-    toast(`Basic strategy says: <b>${names[rec]}</b><br><span style="font-size:.82rem;opacity:.85">vs dealer ${up.rank} — ${why[rec]}.</span>`);
+    showToast(() => t('hintMsg', rec, up.rank));
+  }
+
+  // ---------- Language switching ----------
+  function applyLanguage(){
+    document.querySelectorAll('[data-i18n]').forEach(e => { e.textContent = t(e.dataset.i18n); });
+    el.soundToggle.textContent = t(Sound.on() ? 'soundOn' : 'soundOff');
+    el.lang.textContent = (lang === 'en') ? 'עברית' : 'EN';
+    el.lang.setAttribute('aria-label', lang === 'en' ? 'Switch to Hebrew' : 'Switch to English');
+    document.documentElement.lang = lang;
+    const dir = (lang === 'he') ? 'rtl' : 'ltr';
+    el.message.dir = dir;
+    el.toast.dir = dir;
+    renderMessage();
+    if(S.hands.length) renderPlayers();
+    if(el.toast.classList.contains('show') && toastRender) el.toast.innerHTML = toastRender();
+  }
+
+  function toggleLanguage(){
+    Sound.resume(); Sound.chip();
+    document.body.classList.add('lang-fade');
+    setTimeout(() => {
+      lang = (lang === 'en') ? 'he' : 'en';
+      localStorage.setItem('br_lang', lang);
+      applyLanguage();
+      document.body.classList.remove('lang-fade');
+    }, 200);
   }
 
   // ---------- Events ----------
@@ -828,14 +999,15 @@
   el.split.addEventListener('click', playerSplit);
   el.hint.addEventListener('click', showHint);
   el.next.addEventListener('click', newHand);
+  el.lang.addEventListener('click', toggleLanguage);
 
   el.soundToggle.addEventListener('click', () => {
     const on = Sound.toggle();
-    el.soundToggle.textContent = on ? '🔊 Sound: On' : '🔇 Sound: Off';
+    el.soundToggle.textContent = t(on ? 'soundOn' : 'soundOff');
     if(on) Sound.chip();
   });
   el.resetBank.addEventListener('click', () => {
-    if(S.phase === 'betting'){ S.balance = 1000; S.bet = 0; saveBank(); syncWallet(); updateChipButtons(); toast('Bankroll reset to <b>$1000</b>.'); }
+    if(S.phase === 'betting'){ S.balance = 1000; S.bet = 0; saveBank(); syncWallet(); updateChipButtons(); showToast(() => t('bankReset')); }
   });
 
   // keyboard shortcuts
@@ -854,7 +1026,9 @@
   loadBank();
   buildShoe();
   syncWallet();
+  S.msg = { key: 'placeBet', args: [] };
   showPhaseControls();
+  applyLanguage();
 })();
 </script>
 </body>
